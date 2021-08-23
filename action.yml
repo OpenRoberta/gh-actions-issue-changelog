@@ -1,11 +1,13 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Issue Changelog Generator'
+description: 'Generate a changelog from the issues mentioned in your commit history'
+author: 'Ayk Borstelmann - OpenRoberta'
 inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  token:
+    required: false
+    description: 'Personal Access token from GitHub. Usually this is `${{ secrets.GITHUB_TOKEN }}`. Alternatively use `env.GITHUB_TOKEN`'
+outputs:
+  changelog:
+    description: 'The changelog generated from this action'
 runs:
   using: 'node12'
   main: 'dist/index.js'
