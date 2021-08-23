@@ -4,7 +4,7 @@ author: 'Ayk Borstelmann - OpenRoberta'
 inputs:
   token:
     required: false
-    description: 'Personal Access token from GitHub. Usually this is `${{ secrets.GITHUB_TOKEN }}`. Alternatively use `env.GITHUB_TOKEN`'
+    description: 'Personal Access token from GitHub. Usually this is ${{ secrets.GITHUB_TOKEN }}. Alternatively use env.GITHUB_TOKEN'
 outputs:
   changelog:
     description: 'The changelog generated from this action'
