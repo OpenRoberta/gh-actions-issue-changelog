@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import {context, getOctokit} from "@actions/github";
 import {formatIssue, parseIssueNumber} from "./util";
-import {Api} from "./api";
+import {Api, Issue} from "./api";
 
 async function run(): Promise<void> {
     try {
@@ -27,7 +27,12 @@ async function run(): Promise<void> {
                 .map(async issue => await api.getIssue(issue))
         );
 
-        const changelog = issues_list.map(issue => formatIssue(issue)).join("\n");
+        const changelog = issues_list
+            .filter(issue => issue !== undefined)
+            .map(issue => issue as Issue)
+            .map(issue => formatIssue(issue))
+            .join("\n");
+
         core.setOutput("changelog", changelog);
     } catch (error) {
         core.setFailed(error.message);

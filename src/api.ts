@@ -12,7 +12,7 @@ interface Commit {
     message: string;
 }
 
-interface Issue {
+export interface Issue {
     title: string;
     number: number;
 }
@@ -56,8 +56,12 @@ export class Api {
         return response.data.commits.map(commit => commit.commit);
     }
 
-    async getIssue(issue_number: number): Promise<Issue> {
-        const response = await this.git.rest.issues.get({owner: this.owner, repo: this.repo, issue_number});
-        return response.data;
+    async getIssue(issue_number: number): Promise<Issue | undefined> {
+        try {
+            const response = await this.git.rest.issues.get({owner: this.owner, repo: this.repo, issue_number});
+            return response.data;
+        } catch (e) {
+            return undefined;
+        }
     }
 }

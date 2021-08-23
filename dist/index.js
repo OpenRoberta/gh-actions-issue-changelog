@@ -56,8 +56,13 @@ class Api {
     }
     getIssue(issue_number) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield this.git.rest.issues.get({ owner: this.owner, repo: this.repo, issue_number });
-            return response.data;
+            try {
+                const response = yield this.git.rest.issues.get({ owner: this.owner, repo: this.repo, issue_number });
+                return response.data;
+            }
+            catch (e) {
+                return undefined;
+            }
         });
     }
 }
@@ -121,7 +126,11 @@ function run() {
                 .map(msg => util_1.parseIssueNumber(msg))
                 .filter(issue => issue >= 0)
                 .map((issue) => __awaiter(this, void 0, void 0, function* () { return yield api.getIssue(issue); })));
-            const changelog = issues_list.map(issue => util_1.formatIssue(issue)).join("\n");
+            const changelog = issues_list
+                .filter(issue => issue !== undefined)
+                .map(issue => issue)
+                .map(issue => util_1.formatIssue(issue))
+                .join("\n");
             core.setOutput("changelog", changelog);
         }
         catch (error) {

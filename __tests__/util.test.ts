@@ -15,8 +15,10 @@ test("contains issue number accepts and rejects correctly", async () => {
 });
 
 test("format issue", async () => {
-    expect(formatIssue({
-        title: "Revise / Remove shortcuts from menu",
-        number: 1058
-    })).toBe("#1058 Revise / Remove shortcuts from menu");
+    expect(
+        formatIssue({
+            title: "Revise / Remove shortcuts from menu",
+            number: 1058
+        })
+    ).toBe("#1058 Revise / Remove shortcuts from menu");
 });
