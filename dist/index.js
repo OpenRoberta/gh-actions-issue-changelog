@@ -6,6 +6,25 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -22,6 +41,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Api = void 0;
 const compare_versions_1 = __importDefault(__nccwpck_require__(296));
 const util_1 = __nccwpck_require__(24);
+const core = __importStar(__nccwpck_require__(186));
 class Api {
     constructor(git, context) {
         this.git = git;
@@ -61,6 +81,7 @@ class Api {
                 return response.data;
             }
             catch (e) {
+                core.warning(`Cannot find issue #${issue_number}`);
                 return undefined;
             }
         });
@@ -113,19 +134,18 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = process.env.GITHUB_TOKEN || core.getInput("token") || "";
-            if (process.env.GITHUB_TOKEN === "") {
-                throw new Error("Github Token is not given");
-            }
             const octokit = github_1.getOctokit(token);
             const api = new api_1.Api(octokit, github_1.context);
             const [currentTag, previousTag] = yield api.getLastTwoTags();
             core.info(`Building changelog from ${previousTag.name} to ${currentTag.name}`);
             const commits = yield api.getCommitsBetweenTags(currentTag, previousTag);
-            const issues_list = yield Promise.all(commits
+            const issueNumberList = new Set(commits
                 .map(commit => commit.message)
                 .map(msg => util_1.parseIssueNumber(msg))
-                .filter(issue => issue >= 0)
-                .map((issue) => __awaiter(this, void 0, void 0, function* () { return yield api.getIssue(issue); })));
+                .filter(issue => issue >= 0));
+            core.info(`Found issues [${Array.from(issueNumberList).join(",")}]`);
+            core.info(`Catching corresponding titles ...`);
+            const issues_list = yield Promise.all(Array.from(issueNumberList).map((issue) => __awaiter(this, void 0, void 0, function* () { return yield api.getIssue(issue); })));
             const changelog = issues_list
                 .filter(issue => issue !== undefined)
                 .map(issue => issue)

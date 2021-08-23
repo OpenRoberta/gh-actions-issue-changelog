@@ -6,10 +6,6 @@ import {Api, Issue} from "./api";
 async function run(): Promise<void> {
     try {
         const token: string = process.env.GITHUB_TOKEN || core.getInput("token") || "";
-        if (process.env.GITHUB_TOKEN === "") {
-            throw new Error("Github Token is not given");
-        }
-
         const octokit = getOctokit(token);
         const api = new Api(octokit, context);
 
@@ -19,13 +15,17 @@ async function run(): Promise<void> {
 
         const commits = await api.getCommitsBetweenTags(currentTag, previousTag);
 
-        const issues_list = await Promise.all(
+        const issueNumberList = new Set(
             commits
                 .map(commit => commit.message)
                 .map(msg => parseIssueNumber(msg))
                 .filter(issue => issue >= 0)
-                .map(async issue => await api.getIssue(issue))
         );
+
+        core.info(`Found issues [${Array.from(issueNumberList).join(",")}]`);
+        core.info(`Catching corresponding titles ...`);
+
+        const issues_list = await Promise.all(Array.from(issueNumberList).map(async issue => await api.getIssue(issue)));
 
         const changelog = issues_list
             .filter(issue => issue !== undefined)

@@ -2,6 +2,7 @@ import {Context} from "@actions/github/lib/context";
 import {GitHub} from "@actions/github/lib/utils";
 import compareVersions from "compare-versions";
 import {getVersion} from "./util";
+import * as core from "@actions/core";
 
 interface Tag {
     name: string;
@@ -61,6 +62,7 @@ export class Api {
             const response = await this.git.rest.issues.get({owner: this.owner, repo: this.repo, issue_number});
             return response.data;
         } catch (e) {
+            core.warning(`Cannot find issue #${issue_number}`);
             return undefined;
         }
     }
