@@ -92,6 +92,67 @@ exports.Api = Api;
 
 /***/ }),
 
+/***/ 82:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.generateChangelog = void 0;
+const core = __importStar(__nccwpck_require__(186));
+const util_1 = __nccwpck_require__(24);
+function generateChangelog(api) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const [currentTag, previousTag] = yield api.getLastTwoTags();
+        core.info(`Building changelog from ${previousTag.name} to ${currentTag.name}`);
+        const commits = yield api.getCommitsBetweenTags(currentTag, previousTag);
+        const issueNumberList = new Set(commits
+            .map(commit => commit.message)
+            .map(msg => util_1.parseIssueNumber(msg))
+            .filter(issue => issue >= 0));
+        core.info(`Found issues [${Array.from(issueNumberList).join(",")}]`);
+        core.info(`Catching corresponding titles ...`);
+        const issues_list = yield Promise.all(Array.from(issueNumberList).map((issue) => __awaiter(this, void 0, void 0, function* () { return yield api.getIssue(issue); })));
+        return issues_list
+            .filter(issue => issue !== undefined)
+            .map(issue => issue)
+            .map(issue => util_1.formatIssue(issue))
+            .join("\n");
+    });
+}
+exports.generateChangelog = generateChangelog;
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -128,29 +189,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const github_1 = __nccwpck_require__(438);
-const util_1 = __nccwpck_require__(24);
 const api_1 = __nccwpck_require__(947);
+const changelog_1 = __nccwpck_require__(82);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = process.env.GITHUB_TOKEN || core.getInput("token") || "";
             const octokit = github_1.getOctokit(token);
             const api = new api_1.Api(octokit, github_1.context);
-            const [currentTag, previousTag] = yield api.getLastTwoTags();
-            core.info(`Building changelog from ${previousTag.name} to ${currentTag.name}`);
-            const commits = yield api.getCommitsBetweenTags(currentTag, previousTag);
-            const issueNumberList = new Set(commits
-                .map(commit => commit.message)
-                .map(msg => util_1.parseIssueNumber(msg))
-                .filter(issue => issue >= 0));
-            core.info(`Found issues [${Array.from(issueNumberList).join(",")}]`);
-            core.info(`Catching corresponding titles ...`);
-            const issues_list = yield Promise.all(Array.from(issueNumberList).map((issue) => __awaiter(this, void 0, void 0, function* () { return yield api.getIssue(issue); })));
-            const changelog = issues_list
-                .filter(issue => issue !== undefined)
-                .map(issue => issue)
-                .map(issue => util_1.formatIssue(issue))
-                .join("\n");
+            const changelog = yield changelog_1.generateChangelog(api);
             core.setOutput("changelog", changelog);
         }
         catch (error) {
@@ -327,7 +374,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __nccwpck_require__(351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(278);
@@ -505,19 +552,30 @@ exports.debug = debug;
 /**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function error(message) {
-    command_1.issue('error', message instanceof Error ? message.toString() : message);
+function error(message, properties = {}) {
+    command_1.issueCommand('error', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
- * Adds an warning issue
+ * Adds a warning issue
  * @param message warning issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function warning(message) {
-    command_1.issue('warning', message instanceof Error ? message.toString() : message);
+function warning(message, properties = {}) {
+    command_1.issueCommand('warning', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
+/**
+ * Adds a notice issue
+ * @param message notice issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
+ */
+function notice(message, properties = {}) {
+    command_1.issueCommand('notice', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
+exports.notice = notice;
 /**
  * Writes info to log with console.log.
  * @param message info message
@@ -651,7 +709,7 @@ exports.issueCommand = issueCommand;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toCommandValue = void 0;
+exports.toCommandProperties = exports.toCommandValue = void 0;
 /**
  * Sanitizes an input into a string so it can be passed into issueCommand safely
  * @param input input to sanitize into a string
@@ -666,6 +724,25 @@ function toCommandValue(input) {
     return JSON.stringify(input);
 }
 exports.toCommandValue = toCommandValue;
+/**
+ *
+ * @param annotationProperties
+ * @returns The command properties to send with the actual annotation command
+ * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
+ */
+function toCommandProperties(annotationProperties) {
+    if (!Object.keys(annotationProperties).length) {
+        return {};
+    }
+    return {
+        title: annotationProperties.title,
+        line: annotationProperties.startLine,
+        endLine: annotationProperties.endLine,
+        col: annotationProperties.startColumn,
+        endColumn: annotationProperties.endColumn
+    };
+}
+exports.toCommandProperties = toCommandProperties;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),

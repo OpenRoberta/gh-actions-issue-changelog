@@ -4,12 +4,12 @@ import compareVersions from "compare-versions";
 import {getVersion} from "./util";
 import * as core from "@actions/core";
 
-interface Tag {
+export interface Tag {
     name: string;
     commit: {sha: string};
 }
 
-interface Commit {
+export interface Commit {
     message: string;
 }
 
