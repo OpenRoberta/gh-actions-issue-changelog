@@ -1,4 +1,4 @@
-[![build-test](https://github.com/aykborstelmann/gh-issue-changelog/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/aykborstelmann/gh-issue-changelog/actions/workflows/test.yml)
+[![build-test](https://github.com/Openroberta/gh-actions-issue-changelog/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/OpenRoberta/gh-actions-issue-changelog/actions/workflows/test.yml)
 
 # Build changelog from mentioned issues in commits
 
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Changelog
         id: changelog
-        uses: aykborstelmann/gh-issue-changelog@v1
+        uses: OpenRoberta/gh-actions-issue-changelog@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
