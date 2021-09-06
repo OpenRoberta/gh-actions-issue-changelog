@@ -20,10 +20,14 @@ describe("parses issue number from commit message", () => {
     it("parses issue number from normal commit message", () => {
         expect(parseIssueNumber("issue #1081 - the onWrap function return the result of the wrapped function")).toBe(1081);
         expect(parseIssueNumber("issue #1051 prevent multiple click events in the right menu bar")).toBe(1051);
+        expect(parseIssueNumber("fix #1052 prevent multiple click events in the right menu bar")).toBe(1052);
+        expect(parseIssueNumber("closes #1053 prevent multiple click events in the right menu bar")).toBe(1053);
+        expect(parseIssueNumber("prevent multiple click events in the right menu bar\n\n#1021")).toBe(1021);
     });
 
     it("doesn't find version number", () => {
         expect(parseIssueNumber("remove outdated volksbot plugin")).toBe(-1);
+        expect(parseIssueNumber("1051 remove status")).toBe(-1);
     });
 });
 

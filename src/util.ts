@@ -6,7 +6,7 @@ export function getVersion(tag: {name: string}): string {
 }
 
 export function parseIssueNumber(commitMessage: string): number {
-    const regex = /issue #(\d+)/;
+    const regex = /#(\d+)/;
     const matches = commitMessage.match(regex);
     if (!matches?.length) {
         return -1;
