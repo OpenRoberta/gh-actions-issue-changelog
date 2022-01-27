@@ -225,7 +225,7 @@ function getVersion(tag) {
 }
 exports.getVersion = getVersion;
 function parseIssueNumber(commitMessage) {
-    const regex = /issue #(\d+)/;
+    const regex = /#(\d+)/;
     const matches = commitMessage.match(regex);
     if (!(matches === null || matches === void 0 ? void 0 : matches.length)) {
         return -1;
